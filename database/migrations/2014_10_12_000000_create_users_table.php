@@ -27,7 +27,6 @@ return new class extends Migration
             $table->timestamps();
 
             // Index supplémentaires pour optimiser les recherches
-            $table->index('telephone');              // recherche rapide par prrenom
             $table->index('nom');                 // recherche rapide par nom
             $table->index(['prenom', 'nom']);     // recherche rapide par prénom + nom
         });
