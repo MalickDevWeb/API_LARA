@@ -6,25 +6,33 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->rememberToken();
+
+            $table->string('prenom');
+            $table->string('nom');
+
+            $table->string('sexe');
+            $table->date('date_naissance');
+            $table->string('adresse')->nullable();
+            $table->string('login')->unique()->nullable();  // index UNIQUE automatique
+            $table->string('email')->unique()->nullable();  // index UNIQUE automatique
+            $table->string('telephone')->nullable();
+
+            $table->enum('type', ['ADMIN', 'CLIENT'])->default('CLIENT');
+            $table->string('password')->nullable();
+
             $table->timestamps();
+
+            // Index supplémentaires pour optimiser les recherches
+            $table->index('telephone');              // recherche rapide par prrenom
+            $table->index('nom');                 // recherche rapide par nom
+            $table->index(['prenom', 'nom']);     // recherche rapide par prénom + nom
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('users');

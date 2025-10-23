@@ -7,6 +7,10 @@ use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
 
+use App\Models\User;
+use App\Observers\UserObserver;
+
+
 class EventServiceProvider extends ServiceProvider
 {
     /**
@@ -19,7 +23,10 @@ class EventServiceProvider extends ServiceProvider
             SendEmailVerificationNotification::class,
         ],
     ];
-
+  public function boot(): void
+{
+    User::observe(UserObserver::class);
+}
     /**
      * Register any events for your application.
      */

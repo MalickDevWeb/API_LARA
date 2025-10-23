@@ -2,31 +2,34 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\Hash;
 
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
+     * Les colonnes qu’on peut remplir automatiquement avec create() ou update().
      */
     protected $fillable = [
-        'name',
+        'prenom',
+        'nom',
+        'sexe',
+        'date_naissance',
+        'adresse',
+        'login',
         'email',
+        'telephone',
+        'type',
         'password',
     ];
 
     /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
+     * Les attributs cachés lors de la sérialisation (par ex. quand on retourne un JSON).
      */
     protected $hidden = [
         'password',
@@ -34,12 +37,19 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
+     * Les attributs à caster automatiquement.
      */
     protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
+        'date_naissance' => 'date',
     ];
+
+    /**
+     * Mutator : toujours hasher le mot de passe automatiquement
+     */
+    public function setPasswordAttribute($value)
+    {
+        if (!empty($value)) {
+            $this->attributes['password'] = Hash::make($value);
+        }
+    }
 }
