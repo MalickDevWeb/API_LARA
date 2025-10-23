@@ -28,6 +28,9 @@ class Compte extends Model
     protected $casts = [
         'solde' => 'decimal:2',
         'metadata' => 'array',
+        'type' => \App\Enums\CompteTypeEnum::class,
+        'devise' => \App\Enums\DeviseEnum::class,
+        'statut' => \App\Enums\StatutEnum::class,
     ];
 
     public function client()

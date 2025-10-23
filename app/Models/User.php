@@ -52,4 +52,36 @@ class User extends Authenticatable
             $this->attributes['password'] = Hash::make($value);
         }
     }
+
+    /**
+     * Relationship with Client
+     */
+    public function client()
+    {
+        return $this->hasOne(Client::class, 'user_id');
+    }
+
+    /**
+     * Relationship with Admin
+     */
+    public function admin()
+    {
+        return $this->hasOne(Admin::class, 'user_id');
+    }
+
+    /**
+     * Check if user is admin
+     */
+    public function isAdmin(): bool
+    {
+        return $this->type === 'ADMIN';
+    }
+
+    /**
+     * Check if user is client
+     */
+    public function isClient(): bool
+    {
+        return $this->type === 'CLIENT';
+    }
 }

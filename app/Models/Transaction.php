@@ -27,6 +27,9 @@ class Transaction extends Model
     protected $casts = [
         'montant' => 'decimal:2',
         'date_transaction' => 'datetime',
+        'type' => \App\Enums\TransactionTypeEnum::class,
+        'devise' => \App\Enums\DeviseEnum::class,
+        'statut' => \App\Enums\StatutEnum::class,
     ];
 
     public function compte()
