@@ -12,10 +12,15 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call(UsersTableSeeder::class);
-        $this->call(ClientSeeder::class);
-        $this->call(AdminSeeder::class);
-        $this->call(CompteSeeder::class);
-        $this->call(TransactionSeeder::class);
-    }
+         // Prevent seeding in production
+         if (app()->environment('production')) {
+             return;
+         }
+
+         $this->call(UsersTableSeeder::class);
+         $this->call(ClientSeeder::class);
+         $this->call(AdminSeeder::class);
+         $this->call(CompteSeeder::class);
+         $this->call(TransactionSeeder::class);
+     }
 }

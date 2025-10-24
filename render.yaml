@@ -1,15 +1,7 @@
 services:
-  - type: web
+  - type: docker
     name: laravel-app
-    runtime: php
-    buildCommand: |
-      composer install --no-dev --optimize-autoloader &&
-      php artisan key:generate &&
-      php artisan config:cache &&
-      php artisan route:cache &&
-      php artisan view:cache &&
-      php artisan migrate --force
-    startCommand: php artisan serve --host=0.0.0.0 --port=$PORT
+    dockerfilePath: Dockerfile
     envVars:
       - key: APP_ENV
         value: production
@@ -34,6 +26,11 @@ services:
         value: sync
       - key: SESSION_DRIVER
         value: file
+      - key: APP_URL
+        fromService:
+          type: web
+          name: laravel-app
+          property: host
 
   - type: pserv
     name: postgres-db
