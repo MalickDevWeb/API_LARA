@@ -7,6 +7,7 @@ enum DeviseEnum: string
     case USD = 'USD';
     case EUR = 'EUR';
     case XOF = 'XOF';
+    case FCFA = 'FCFA';
 
     public function label(): string
     {
@@ -14,6 +15,7 @@ enum DeviseEnum: string
             self::USD => 'Dollar Américain',
             self::EUR => 'Euro',
             self::XOF => 'Franc CFA',
+            self::FCFA => 'Franc CFA',
         };
     }
 }

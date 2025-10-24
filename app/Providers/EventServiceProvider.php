@@ -9,24 +9,34 @@ use Illuminate\Support\Facades\Event;
 
 use App\Models\User;
 use App\Observers\UserObserver;
+use App\Events\ObserverEvent;
+use App\Events\AdventurerEvent;
+use App\Listeners\ObserverEventListener;
+use App\Listeners\AdventurerEventListener;
 
 
 class EventServiceProvider extends ServiceProvider
 {
     /**
-     * The event to listener mappings for the application.
-     *
-     * @var array<class-string, array<int, class-string>>
-     */
+      * The event to listener mappings for the application.
+      *
+      * @var array<class-string, array<int, class-string>>
+      */
     protected $listen = [
-        Registered::class => [
-            SendEmailVerificationNotification::class,
-        ],
-    ];
-  public function boot(): void
-{
-    User::observe(UserObserver::class);
-}
+         Registered::class => [
+             SendEmailVerificationNotification::class,
+         ],
+         ObserverEvent::class => [
+             ObserverEventListener::class,
+         ],
+         AdventurerEvent::class => [
+             AdventurerEventListener::class,
+         ],
+     ];
+   public function boot(): void
+ {
+     User::observe(UserObserver::class);
+ }
     /**
      * Register any events for your application.
      */

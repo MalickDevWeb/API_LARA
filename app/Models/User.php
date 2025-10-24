@@ -8,6 +8,26 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Facades\Hash;
 
+/**
+ * @OA\Schema(
+ *     schema="User",
+ *     type="object",
+ *     title="User",
+ *     description="Modèle d'utilisateur",
+ *     @OA\Property(property="id", type="integer", description="ID de l'utilisateur"),
+ *     @OA\Property(property="prenom", type="string", description="Prénom de l'utilisateur"),
+ *     @OA\Property(property="nom", type="string", description="Nom de l'utilisateur"),
+ *     @OA\Property(property="sexe", type="string", description="Sexe de l'utilisateur"),
+ *     @OA\Property(property="date_naissance", type="string", format="date", description="Date de naissance"),
+ *     @OA\Property(property="adresse", type="string", description="Adresse de l'utilisateur"),
+ *     @OA\Property(property="login", type="string", description="Login de l'utilisateur"),
+ *     @OA\Property(property="email", type="string", format="email", description="Email de l'utilisateur"),
+ *     @OA\Property(property="telephone", type="string", description="Téléphone de l'utilisateur"),
+ *     @OA\Property(property="type", type="string", enum={"ADMIN", "CLIENT"}, description="Type d'utilisateur"),
+ *     @OA\Property(property="created_at", type="string", format="date-time"),
+ *     @OA\Property(property="updated_at", type="string", format="date-time")
+ * )
+ */
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;

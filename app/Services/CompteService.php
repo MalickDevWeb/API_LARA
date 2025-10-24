@@ -8,6 +8,7 @@ use App\Interfaces\CompteRepositoryInterface;
 use App\DTOs\CreateCompteDto;
 use App\DTOs\UpdateCompteDto;
 use App\Enums\StatutEnum;
+use App\Enums\ErrorEnum;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Validator;
 
@@ -50,7 +51,7 @@ class CompteService implements CompteServiceInterface
         // Business logic: Check if titulaire exists
         $client = \App\Models\Client::where('user_id', $dto->titulaire_id)->first();
         if (!$client) {
-            throw new \Exception('Titulaire not found');
+            throw new \Exception(ErrorEnum::TITULAIRE_NOT_FOUND->value);
         }
 
         return $this->compteRepository->create($dto);
@@ -70,12 +71,12 @@ class CompteService implements CompteServiceInterface
     {
         $compte = $this->compteRepository->findById($id);
         if (!$compte) {
-            throw new \Exception('Compte not found');
+            throw new \Exception(ErrorEnum::COMPTE_NOT_FOUND->value);
         }
 
         // Business logic: Check if account has transactions
         if ($compte->transactions()->count() > 0) {
-            throw new \Exception('Cannot delete account with transactions');
+            throw new \Exception(ErrorEnum::CANNOT_DELETE_ACCOUNT_WITH_TRANSACTIONS->value);
         }
 
         return $this->compteRepository->delete($id);
@@ -85,11 +86,11 @@ class CompteService implements CompteServiceInterface
     {
         $compte = $this->compteRepository->findById($id);
         if (!$compte) {
-            throw new \Exception('Compte not found');
+            throw new \Exception(ErrorEnum::COMPTE_NOT_FOUND->value);
         }
 
         if ($compte->statut === StatutEnum::BLOQUE->value) {
-            throw new \Exception('Account is already blocked');
+            throw new \Exception(ErrorEnum::ACCOUNT_ALREADY_BLOCKED->value);
         }
 
         return $this->compteRepository->bloquer($id, $motif);
@@ -99,11 +100,11 @@ class CompteService implements CompteServiceInterface
     {
         $compte = $this->compteRepository->findById($id);
         if (!$compte) {
-            throw new \Exception('Compte not found');
+            throw new \Exception(ErrorEnum::COMPTE_NOT_FOUND->value);
         }
 
         if ($compte->statut !== StatutEnum::BLOQUE->value) {
-            throw new \Exception('Account is not blocked');
+            throw new \Exception(ErrorEnum::ACCOUNT_NOT_BLOCKED->value);
         }
 
         return $this->compteRepository->debloquer($id);

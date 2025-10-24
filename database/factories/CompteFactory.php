@@ -18,7 +18,6 @@ class CompteFactory extends Factory
             'numero_compte' => $this->faker->unique()->numerify('##########'),
             'titulaire_id' => Client::factory(),
             'type' => $this->faker->randomElement(['epargne', 'cheque']),
-            'solde' => $this->faker->randomFloat(2, 0, 100000),
             'devise' => 'FCFA',
             'statut' => $this->faker->randomElement(['actif', 'bloque', 'ferme']),
             'motif_blocage' => $this->faker->optional()->sentence(),

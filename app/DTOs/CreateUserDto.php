@@ -2,6 +2,25 @@
 
 namespace App\DTOs;
 
+/**
+ * @OA\Schema(
+ *     schema="CreateUserDto",
+ *     type="object",
+ *     title="CreateUserDto",
+ *     description="DTO pour créer un utilisateur",
+ *     required={"prenom", "nom", "login", "email", "type", "password"},
+ *     @OA\Property(property="prenom", type="string", description="Prénom de l'utilisateur"),
+ *     @OA\Property(property="nom", type="string", description="Nom de l'utilisateur"),
+ *     @OA\Property(property="sexe", type="string", enum={"M", "F"}, description="Sexe de l'utilisateur"),
+ *     @OA\Property(property="date_naissance", type="string", format="date", description="Date de naissance"),
+ *     @OA\Property(property="adresse", type="string", description="Adresse de l'utilisateur"),
+ *     @OA\Property(property="login", type="string", description="Login de l'utilisateur"),
+ *     @OA\Property(property="email", type="string", format="email", description="Email de l'utilisateur"),
+ *     @OA\Property(property="telephone", type="string", description="Téléphone de l'utilisateur"),
+ *     @OA\Property(property="type", type="string", enum={"CLIENT", "ADMIN"}, description="Type d'utilisateur"),
+ *     @OA\Property(property="password", type="string", description="Mot de passe de l'utilisateur")
+ * )
+ */
 class CreateUserDto
 {
     public string $prenom;

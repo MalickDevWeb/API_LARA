@@ -6,6 +6,7 @@ use App\Models\Transaction;
 use App\Interfaces\TransactionServiceInterface;
 use App\Interfaces\TransactionRepositoryInterface;
 use App\DTOs\CreateTransactionDto;
+use App\Enums\ErrorEnum;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
@@ -44,25 +45,23 @@ class TransactionService implements TransactionServiceInterface
         // Business logic: Check if account exists and is active
         $compte = \App\Models\Compte::find($dto->compte_id);
         if (!$compte) {
-            throw new \Exception('Account not found');
+            throw new \Exception(ErrorEnum::ACCOUNT_NOT_FOUND->value);
         }
         if ($compte->statut !== 'actif') {
-            throw new \Exception('Account is not active');
+            throw new \Exception(ErrorEnum::ACCOUNT_NOT_ACTIVE->value);
         }
 
         // For deposits, no balance check; for withdrawals, check sufficient balance
         if ($dto->type->value === 'retrait') {
             if ($compte->solde < $dto->montant) {
-                throw new \Exception('Insufficient balance');
+                throw new \Exception(ErrorEnum::INSUFFICIENT_BALANCE->value);
             }
         }
 
         return DB::transaction(function () use ($dto, $compte) {
             $transaction = $this->transactionRepository->create($dto);
 
-            // Update account balance
-            $newBalance = $dto->type->value === 'depot' ? $compte->solde + $dto->montant : $compte->solde - $dto->montant;
-            $compte->update(['solde' => $newBalance]);
+            // Balance is now calculated via mutator, no need to update
 
             return $transaction;
         });
@@ -85,11 +84,11 @@ class TransactionService implements TransactionServiceInterface
     {
         $transaction = $this->transactionRepository->findById($id);
         if (!$transaction) {
-            throw new \Exception('Transaction not found');
+            throw new \Exception(ErrorEnum::TRANSACTION_NOT_FOUND->value);
         }
 
         // Business logic: Cannot delete if transaction affects balance
-        throw new \Exception('Deleting transactions is not allowed for audit purposes');
+        throw new \Exception(ErrorEnum::DELETE_TRANSACTION_NOT_ALLOWED->value);
 
         return $this->transactionRepository->delete($id);
     }

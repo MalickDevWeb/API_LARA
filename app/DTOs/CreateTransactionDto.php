@@ -6,6 +6,22 @@ use App\Enums\TransactionTypeEnum;
 use App\Enums\DeviseEnum;
 use App\Enums\StatutEnum;
 
+/**
+ * @OA\Schema(
+ *     schema="CreateTransactionDto",
+ *     type="object",
+ *     title="CreateTransactionDto",
+ *     description="DTO pour créer une transaction",
+ *     required={"compte_id", "type", "montant", "devise"},
+ *     @OA\Property(property="compte_id", type="string", description="ID du compte"),
+ *     @OA\Property(property="type", type="string", enum={"depot", "retrait"}, description="Type de transaction"),
+ *     @OA\Property(property="montant", type="number", format="float", description="Montant de la transaction"),
+ *     @OA\Property(property="devise", type="string", enum={"XOF", "EUR", "USD"}, description="Devise de la transaction"),
+ *     @OA\Property(property="description", type="string", description="Description de la transaction"),
+ *     @OA\Property(property="date_transaction", type="string", format="date-time", description="Date de la transaction"),
+ *     @OA\Property(property="statut", type="string", enum={"actif", "bloque", "ferme"}, description="Statut de la transaction")
+ * )
+ */
 class CreateTransactionDto
 {
     public string $compte_id;

@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Models\Transaction;
 use App\Interfaces\TransactionRepositoryInterface;
 use App\DTOs\CreateTransactionDto;
+use App\Enums\ErrorEnum;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class TransactionRepository implements TransactionRepositoryInterface
@@ -42,7 +43,7 @@ class TransactionRepository implements TransactionRepositoryInterface
     {
         $transaction = $this->findById($id);
         if (!$transaction) {
-            throw new \Exception('Transaction not found');
+            throw new \Exception(ErrorEnum::TRANSACTION_NOT_FOUND->value);
         }
         $transaction->update($data);
         return $transaction->fresh();

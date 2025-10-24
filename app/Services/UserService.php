@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Interfaces\UserServiceInterface;
 use App\Interfaces\UserRepositoryInterface;
 use App\DTOs\CreateUserDto;
+use App\Enums\ErrorEnum;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Validator;
 
@@ -73,13 +74,13 @@ class UserService implements UserServiceInterface
     {
         $user = $this->userRepository->findById($id);
         if (!$user) {
-            throw new \Exception('User not found');
+            throw new \Exception(ErrorEnum::USER_NOT_FOUND->value);
         }
 
         // Business logic: Check if user has accounts
         $hasAccounts = \App\Models\Client::where('user_id', $id)->exists();
         if ($hasAccounts) {
-            throw new \Exception('Cannot delete user with accounts');
+            throw new \Exception(ErrorEnum::CANNOT_DELETE_USER_WITH_ACCOUNTS->value);
         }
 
         return $this->userRepository->delete($id);

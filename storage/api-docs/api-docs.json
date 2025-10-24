@@ -1,0 +1,1014 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "SugarCRM API",
+        "description": "Documentation complète des endpoints SugarCRM",
+        "contact": {
+            "name": "Ton Nom",
+            "email": "tonemail@example.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://api.monsugarcrm.com",
+            "description": "Production server"
+        },
+        {
+            "url": "https://sandbox.monsugarcrm.com",
+            "description": "Test/Sandbox server"
+        }
+    ],
+    "paths": {
+        "/v1/comptes": {
+            "get": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Liste tous les comptes",
+                "operationId": "3963af8778e6c27c99538ec2567d9086",
+                "responses": {
+                    "200": {
+                        "description": "Liste des comptes",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Compte"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Créer un compte",
+                "operationId": "35583737300f081da80860285b3c6055",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateCompteDto"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Compte créé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Compte"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erreur de validation"
+                    }
+                }
+            }
+        },
+        "/v1/comptes/{compteId}": {
+            "get": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Détail d'un compte",
+                "operationId": "43d03aaf9e19a2cc86d3b1293c0e74a3",
+                "parameters": [
+                    {
+                        "name": "compteId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Détails du compte",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Compte"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Compte non trouvé"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Modifier un compte",
+                "operationId": "c76aed998a727a59f1f29ab5dc6bfafa",
+                "parameters": [
+                    {
+                        "name": "compteId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateCompteDto"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Compte modifié",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Compte"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erreur de validation"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Supprimer un compte",
+                "operationId": "3c8f6ae82ae461f0cbc095a9aee1dc09",
+                "parameters": [
+                    {
+                        "name": "compteId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Compte supprimé"
+                    },
+                    "400": {
+                        "description": "Erreur de validation"
+                    }
+                }
+            }
+        },
+        "/v1/comptes/{compteId}/bloquer": {
+            "post": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Bloquer un compte",
+                "operationId": "f0bcb6e053a0c9b94c1674a96a3d3ba0",
+                "parameters": [
+                    {
+                        "name": "compteId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "motif": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Compte bloqué",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Compte"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erreur de validation"
+                    }
+                }
+            }
+        },
+        "/v1/comptes/{compteId}/debloquer": {
+            "post": {
+                "tags": [
+                    "Comptes"
+                ],
+                "summary": "Débloquer un compte",
+                "operationId": "ca7b49794ce1a3fe5cde9aebf240be05",
+                "parameters": [
+                    {
+                        "name": "compteId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Compte débloqué",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Compte"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erreur de validation"
+                    }
+                }
+            }
+        },
+        "/v1/transactions": {
+            "get": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Liste toutes les transactions",
+                "operationId": "561fbc44b30fdc16d5b0be03c382354e",
+                "responses": {
+                    "200": {
+                        "description": "Liste des transactions",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Transaction"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Créer une transaction",
+                "operationId": "2df6a9707ad8a004bd88a8f5ca261962",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateTransactionDto"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Transaction créée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Transaction"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erreur de validation"
+                    }
+                }
+            }
+        },
+        "/v1/transactions/{transactionId}": {
+            "get": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Détail d'une transaction",
+                "operationId": "756ee32dba363237306077bf39c9af91",
+                "parameters": [
+                    {
+                        "name": "transactionId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Détails de la transaction",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Transaction"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Transaction non trouvée"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Modifier une transaction",
+                "operationId": "ecbbfabc9715c8297f818bfda78ed2fa",
+                "parameters": [
+                    {
+                        "name": "transactionId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateTransactionDto"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Transaction modifiée",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Transaction"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erreur de validation"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Transactions"
+                ],
+                "summary": "Supprimer une transaction",
+                "operationId": "4c9293e057320c2387172f3291b7669e",
+                "parameters": [
+                    {
+                        "name": "transactionId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Transaction supprimée"
+                    },
+                    "400": {
+                        "description": "Erreur de validation"
+                    }
+                }
+            }
+        },
+        "/v1/users": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Liste tous les utilisateurs",
+                "operationId": "0e69ec7c952b784b446c59d0dc9955ab",
+                "responses": {
+                    "200": {
+                        "description": "Liste des utilisateurs",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/User"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Créer un utilisateur",
+                "operationId": "9ed60112e13ac6a098aa78c17a39d099",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateUserDto"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Utilisateur créé",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erreur de validation"
+                    }
+                }
+            }
+        },
+        "/v1/users/{userId}": {
+            "get": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Détail d'un utilisateur",
+                "operationId": "526ce02f4a478735e2aac6308908f2b6",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Détails de l'utilisateur",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Utilisateur non trouvé"
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Modifier un utilisateur",
+                "operationId": "c9c4dc8dcde03264675cf26bb15bb2a4",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateUserDto"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Utilisateur modifié",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Erreur de validation"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Supprimer un utilisateur",
+                "operationId": "84cb809ac707f6c94b750e801c588bc1",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Utilisateur supprimé"
+                    },
+                    "400": {
+                        "description": "Erreur de validation"
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "CreateCompteDto": {
+                "title": "CreateCompteDto",
+                "description": "DTO pour créer un compte",
+                "required": [
+                    "numero_compte",
+                    "titulaire_id",
+                    "type",
+                    "devise"
+                ],
+                "properties": {
+                    "numero_compte": {
+                        "description": "Numéro du compte",
+                        "type": "string"
+                    },
+                    "titulaire_id": {
+                        "description": "ID du titulaire",
+                        "type": "integer"
+                    },
+                    "type": {
+                        "description": "Type de compte",
+                        "type": "string",
+                        "enum": [
+                            "courant",
+                            "epargne"
+                        ]
+                    },
+                    "devise": {
+                        "description": "Devise du compte",
+                        "type": "string",
+                        "enum": [
+                            "XOF",
+                            "EUR",
+                            "USD"
+                        ]
+                    },
+                    "statut": {
+                        "description": "Statut du compte",
+                        "type": "string",
+                        "enum": [
+                            "actif",
+                            "bloque",
+                            "ferme"
+                        ]
+                    },
+                    "motif_blocage": {
+                        "description": "Motif de blocage",
+                        "type": "string"
+                    },
+                    "metadata": {
+                        "description": "Métadonnées",
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "CreateTransactionDto": {
+                "title": "CreateTransactionDto",
+                "description": "DTO pour créer une transaction",
+                "required": [
+                    "compte_id",
+                    "type",
+                    "montant",
+                    "devise"
+                ],
+                "properties": {
+                    "compte_id": {
+                        "description": "ID du compte",
+                        "type": "string"
+                    },
+                    "type": {
+                        "description": "Type de transaction",
+                        "type": "string",
+                        "enum": [
+                            "depot",
+                            "retrait"
+                        ]
+                    },
+                    "montant": {
+                        "description": "Montant de la transaction",
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "devise": {
+                        "description": "Devise de la transaction",
+                        "type": "string",
+                        "enum": [
+                            "XOF",
+                            "EUR",
+                            "USD"
+                        ]
+                    },
+                    "description": {
+                        "description": "Description de la transaction",
+                        "type": "string"
+                    },
+                    "date_transaction": {
+                        "description": "Date de la transaction",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "statut": {
+                        "description": "Statut de la transaction",
+                        "type": "string",
+                        "enum": [
+                            "actif",
+                            "bloque",
+                            "ferme"
+                        ]
+                    }
+                },
+                "type": "object"
+            },
+            "CreateUserDto": {
+                "title": "CreateUserDto",
+                "description": "DTO pour créer un utilisateur",
+                "required": [
+                    "prenom",
+                    "nom",
+                    "login",
+                    "email",
+                    "type",
+                    "password"
+                ],
+                "properties": {
+                    "prenom": {
+                        "description": "Prénom de l'utilisateur",
+                        "type": "string"
+                    },
+                    "nom": {
+                        "description": "Nom de l'utilisateur",
+                        "type": "string"
+                    },
+                    "sexe": {
+                        "description": "Sexe de l'utilisateur",
+                        "type": "string",
+                        "enum": [
+                            "M",
+                            "F"
+                        ]
+                    },
+                    "date_naissance": {
+                        "description": "Date de naissance",
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "adresse": {
+                        "description": "Adresse de l'utilisateur",
+                        "type": "string"
+                    },
+                    "login": {
+                        "description": "Login de l'utilisateur",
+                        "type": "string"
+                    },
+                    "email": {
+                        "description": "Email de l'utilisateur",
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "telephone": {
+                        "description": "Téléphone de l'utilisateur",
+                        "type": "string"
+                    },
+                    "type": {
+                        "description": "Type d'utilisateur",
+                        "type": "string",
+                        "enum": [
+                            "CLIENT",
+                            "ADMIN"
+                        ]
+                    },
+                    "password": {
+                        "description": "Mot de passe de l'utilisateur",
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "UpdateCompteDto": {
+                "title": "UpdateCompteDto",
+                "description": "DTO pour mettre à jour un compte",
+                "properties": {
+                    "numero_compte": {
+                        "description": "Numéro du compte",
+                        "type": "string"
+                    },
+                    "titulaire_id": {
+                        "description": "ID du titulaire",
+                        "type": "integer"
+                    },
+                    "type": {
+                        "description": "Type de compte",
+                        "type": "string",
+                        "enum": [
+                            "courant",
+                            "epargne"
+                        ]
+                    },
+                    "devise": {
+                        "description": "Devise du compte",
+                        "type": "string",
+                        "enum": [
+                            "XOF",
+                            "EUR",
+                            "USD"
+                        ]
+                    },
+                    "statut": {
+                        "description": "Statut du compte",
+                        "type": "string",
+                        "enum": [
+                            "actif",
+                            "bloque",
+                            "ferme"
+                        ]
+                    },
+                    "motif_blocage": {
+                        "description": "Motif de blocage",
+                        "type": "string"
+                    },
+                    "metadata": {
+                        "description": "Métadonnées",
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "Compte": {
+                "title": "Compte",
+                "description": "Modèle de compte",
+                "properties": {
+                    "id": {
+                        "description": "ID du compte",
+                        "type": "string"
+                    },
+                    "numero_compte": {
+                        "description": "Numéro du compte",
+                        "type": "string"
+                    },
+                    "titulaire_id": {
+                        "description": "ID du titulaire",
+                        "type": "string"
+                    },
+                    "type": {
+                        "description": "Type de compte",
+                        "type": "string",
+                        "enum": [
+                            "courant",
+                            "epargne"
+                        ]
+                    },
+                    "devise": {
+                        "description": "Devise du compte",
+                        "type": "string",
+                        "enum": [
+                            "XOF",
+                            "EUR",
+                            "USD"
+                        ]
+                    },
+                    "statut": {
+                        "description": "Statut du compte",
+                        "type": "string",
+                        "enum": [
+                            "actif",
+                            "bloque",
+                            "ferme"
+                        ]
+                    },
+                    "motif_blocage": {
+                        "description": "Motif de blocage",
+                        "type": "string"
+                    },
+                    "metadata": {
+                        "description": "Métadonnées",
+                        "type": "object"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "Transaction": {
+                "title": "Transaction",
+                "description": "Modèle de transaction",
+                "properties": {
+                    "id": {
+                        "description": "ID de la transaction",
+                        "type": "string"
+                    },
+                    "compte_id": {
+                        "description": "ID du compte",
+                        "type": "string"
+                    },
+                    "type": {
+                        "description": "Type de transaction",
+                        "type": "string",
+                        "enum": [
+                            "depot",
+                            "retrait"
+                        ]
+                    },
+                    "montant": {
+                        "description": "Montant de la transaction",
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "devise": {
+                        "description": "Devise de la transaction",
+                        "type": "string",
+                        "enum": [
+                            "XOF",
+                            "EUR",
+                            "USD"
+                        ]
+                    },
+                    "description": {
+                        "description": "Description de la transaction",
+                        "type": "string"
+                    },
+                    "date_transaction": {
+                        "description": "Date de la transaction",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "statut": {
+                        "description": "Statut de la transaction",
+                        "type": "string",
+                        "enum": [
+                            "actif",
+                            "bloque",
+                            "ferme"
+                        ]
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            },
+            "User": {
+                "title": "User",
+                "description": "Modèle d'utilisateur",
+                "properties": {
+                    "id": {
+                        "description": "ID de l'utilisateur",
+                        "type": "integer"
+                    },
+                    "prenom": {
+                        "description": "Prénom de l'utilisateur",
+                        "type": "string"
+                    },
+                    "nom": {
+                        "description": "Nom de l'utilisateur",
+                        "type": "string"
+                    },
+                    "sexe": {
+                        "description": "Sexe de l'utilisateur",
+                        "type": "string"
+                    },
+                    "date_naissance": {
+                        "description": "Date de naissance",
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "adresse": {
+                        "description": "Adresse de l'utilisateur",
+                        "type": "string"
+                    },
+                    "login": {
+                        "description": "Login de l'utilisateur",
+                        "type": "string"
+                    },
+                    "email": {
+                        "description": "Email de l'utilisateur",
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "telephone": {
+                        "description": "Téléphone de l'utilisateur",
+                        "type": "string"
+                    },
+                    "type": {
+                        "description": "Type d'utilisateur",
+                        "type": "string",
+                        "enum": [
+                            "ADMIN",
+                            "CLIENT"
+                        ]
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "BearerAuth": {
+                "type": "http",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Comptes",
+            "description": "Comptes"
+        },
+        {
+            "name": "Transactions",
+            "description": "Transactions"
+        },
+        {
+            "name": "Users",
+            "description": "Users"
+        }
+    ]
+}

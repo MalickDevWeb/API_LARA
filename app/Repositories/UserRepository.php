@@ -5,6 +5,7 @@ namespace App\Repositories;
 use App\Models\User;
 use App\Interfaces\UserRepositoryInterface;
 use App\DTOs\CreateUserDto;
+use App\Enums\ErrorEnum;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 class UserRepository implements UserRepositoryInterface
@@ -49,7 +50,7 @@ class UserRepository implements UserRepositoryInterface
     {
         $user = $this->findById($id);
         if (!$user) {
-            throw new \Exception('User not found');
+            throw new \Exception(ErrorEnum::USER_NOT_FOUND->value);
         }
         $user->update($data);
         return $user->fresh();

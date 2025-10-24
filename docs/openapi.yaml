@@ -1,0 +1,1163 @@
+openapi: 3.0.0
+info:
+  title: SugarCRM API
+  version: 1.0.0
+  description: |
+    Documentation complète de l'API bancaire SugarCRM.
+
+    Cette API permet de gérer les utilisateurs, comptes bancaires et transactions avec un système de calcul automatique du solde basé sur les transactions actives.
+
+    ## Fonctionnalités principales:
+    - Gestion des utilisateurs (Admin/Client)
+    - Gestion des comptes bancaires avec calcul automatique du solde
+    - Gestion des transactions (dépôt, retrait, virement, frais)
+    - Système de blocage/déblocage des comptes
+    - Authentification par token Bearer
+  contact:
+    name: Équipe SugarCRM
+    email: support@sugarcrm.com
+
+servers:
+  - url: https://api.monsugarcrm.com
+    description: Serveur de production
+  - url: https://sandbox.monsugarcrm.com
+    description: Serveur de test/Sandbox
+
+security:
+  - BearerAuth: []
+
+paths:
+  # Users endpoints
+  /v1/users:
+    get:
+      summary: Récupérer la liste des utilisateurs
+      description: |
+        Retourne une liste paginée de tous les utilisateurs du système.
+        Accessible uniquement aux administrateurs.
+      tags:
+        - Users
+      parameters:
+        - name: page
+          in: query
+          description: Numéro de la page (pour la pagination)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: per_page
+          in: query
+          description: Nombre d'éléments par page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 15
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Liste des utilisateurs récupérée avec succès
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      summary: Créer un nouvel utilisateur
+      description: |
+        Crée un nouvel utilisateur dans le système.
+        Le mot de passe sera automatiquement hashé.
+      tags:
+        - Users
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+            example:
+              prenom: "Jean"
+              nom: "Dupont"
+              sexe: "M"
+              date_naissance: "1990-01-01"
+              adresse: "123 Rue de la Paix, Paris"
+              login: "jean.dupont"
+              email: "jean.dupont@example.com"
+              telephone: "+33123456789"
+              type: "CLIENT"
+              password: "motdepasse123"
+      responses:
+        '201':
+          description: Utilisateur créé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /v1/users/{userId}:
+    parameters:
+      - name: userId
+        in: path
+        required: true
+        description: ID unique de l'utilisateur
+        schema:
+          type: string
+
+    get:
+      summary: Récupérer un utilisateur spécifique
+      description: |
+        Retourne les détails complets d'un utilisateur spécifique,
+        incluant ses comptes et transactions associées.
+      tags:
+        - Users
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Utilisateur récupéré avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      summary: Modifier un utilisateur
+      description: |
+        Met à jour les informations d'un utilisateur existant.
+        Tous les champs sont optionnels.
+      tags:
+        - Users
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: Utilisateur modifié avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    delete:
+      summary: Supprimer un utilisateur
+      description: |
+        Supprime définitivement un utilisateur du système.
+        ⚠️ Cette action est irréversible.
+      tags:
+        - Users
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Utilisateur supprimé avec succès
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Utilisateur supprimé avec succès"
+        '400':
+          description: Impossible de supprimer l'utilisateur (comptes existants, etc.)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Comptes endpoints
+  /v1/comptes:
+    get:
+      summary: Récupérer la liste des comptes
+      description: |
+        Retourne une liste paginée de tous les comptes bancaires,
+        avec les informations du titulaire et le solde calculé automatiquement.
+      tags:
+        - Comptes
+      parameters:
+        - name: page
+          in: query
+          description: Numéro de la page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: per_page
+          in: query
+          description: Nombre d'éléments par page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 15
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Liste des comptes récupérée avec succès
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/CompteWithRelations'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      summary: Créer un nouveau compte bancaire
+      description: |
+        Crée un nouveau compte bancaire pour un utilisateur existant.
+        Le solde initial sera de 0 et sera calculé automatiquement
+        en fonction des transactions futures.
+      tags:
+        - Comptes
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCompteRequest'
+            example:
+              numero_compte: "1234567890"
+              titulaire_id: 1
+              type: "epargne"
+              devise: "FCFA"
+              statut: "actif"
+      responses:
+        '201':
+          description: Compte créé avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Compte'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /v1/comptes/{compteId}:
+    parameters:
+      - name: compteId
+        in: path
+        required: true
+        description: ID unique du compte
+        schema:
+          type: string
+
+    get:
+      summary: Récupérer un compte spécifique
+      description: |
+        Retourne les détails complets d'un compte bancaire,
+        incluant les informations du titulaire, les transactions
+        et le solde calculé automatiquement.
+      tags:
+        - Comptes
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Compte récupéré avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompteWithRelations'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      summary: Modifier un compte
+      description: |
+        Met à jour les informations d'un compte bancaire existant.
+        Le solde n'est pas modifiable directement car il est calculé automatiquement.
+      tags:
+        - Comptes
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCompteRequest'
+      responses:
+        '200':
+          description: Compte modifié avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Compte'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+    delete:
+      summary: Supprimer un compte
+      description: |
+        Supprime définitivement un compte bancaire.
+        ⚠️ Un compte ne peut être supprimé que s'il n'a pas de transactions.
+      tags:
+        - Comptes
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Compte supprimé avec succès
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Compte supprimé avec succès"
+        '400':
+          description: Impossible de supprimer le compte (transactions existantes, etc.)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v1/comptes/{compteId}/bloquer:
+    parameters:
+      - name: compteId
+        in: path
+        required: true
+        description: ID unique du compte à bloquer
+        schema:
+          type: string
+
+    post:
+      summary: Bloquer un compte
+      description: |
+        Bloque un compte bancaire pour des raisons de sécurité ou administratives.
+        Nécessite un motif de blocage.
+      tags:
+        - Comptes
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - motif
+              properties:
+                motif:
+                  type: string
+                  description: Motif du blocage
+                  example: "Suspicion de fraude"
+            example:
+              motif: "Suspicion de fraude"
+      responses:
+        '200':
+          description: Compte bloqué avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Compte'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /v1/comptes/{compteId}/debloquer:
+    parameters:
+      - name: compteId
+        in: path
+        required: true
+        description: ID unique du compte à débloquer
+        schema:
+          type: string
+
+    post:
+      summary: Débloquer un compte
+      description: |
+        Débloque un compte bancaire précédemment bloqué.
+        Le motif de blocage sera supprimé.
+      tags:
+        - Comptes
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Compte débloqué avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Compte'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Transactions endpoints
+  /v1/transactions:
+    get:
+      summary: Récupérer la liste des transactions
+      description: |
+        Retourne une liste paginée de toutes les transactions,
+        avec les informations du compte associé.
+      tags:
+        - Transactions
+      parameters:
+        - name: page
+          in: query
+          description: Numéro de la page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: per_page
+          in: query
+          description: Nombre d'éléments par page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 15
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Liste des transactions récupérée avec succès
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/TransactionWithRelations'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      summary: Créer une nouvelle transaction
+      description: |
+        Crée une nouvelle transaction (dépôt, retrait, virement, frais)
+        sur un compte bancaire. Le solde du compte sera automatiquement
+        recalculé après la transaction.
+
+        Pour les retraits, vérifie automatiquement que le solde est suffisant.
+      tags:
+        - Transactions
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTransactionRequest'
+            examples:
+              depot:
+                summary: Exemple de dépôt
+                value:
+                  compte_id: "123e4567-e89b-12d3-a456-426614174000"
+                  type: "depot"
+                  montant: 1000.50
+                  devise: "FCFA"
+                  description: "Dépôt mensuel"
+              retrait:
+                summary: Exemple de retrait
+                value:
+                  compte_id: "123e4567-e89b-12d3-a456-426614174000"
+                  type: "retrait"
+                  montant: 500.00
+                  devise: "FCFA"
+                  description: "Retrait pour achats"
+              virement:
+                summary: Exemple de virement
+                value:
+                  compte_id: "123e4567-e89b-12d3-a456-426614174000"
+                  type: "virement"
+                  montant: 200.00
+                  devise: "FCFA"
+                  description: "Virement vers autre compte"
+      responses:
+        '201':
+          description: Transaction créée avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaction'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+
+  /v1/transactions/{transactionId}:
+    parameters:
+      - name: transactionId
+        in: path
+        required: true
+        description: ID unique de la transaction
+        schema:
+          type: string
+
+    get:
+      summary: Récupérer une transaction spécifique
+      description: |
+        Retourne les détails complets d'une transaction spécifique,
+        incluant les informations du compte associé.
+      tags:
+        - Transactions
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Transaction récupérée avec succès
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionWithRelations'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Authentification par token Bearer.
+        Inclure le token dans le header: `Authorization: Bearer <token>`
+
+  schemas:
+    # Common schemas
+    PaginatedResponse:
+      type: object
+      properties:
+        current_page:
+          type: integer
+          description: Page actuelle
+        data:
+          type: array
+          items:
+            type: object
+          description: Données de la page
+        first_page_url:
+          type: string
+          format: uri
+        from:
+          type: integer
+          description: Index du premier élément
+        last_page:
+          type: integer
+          description: Dernière page
+        last_page_url:
+          type: string
+          format: uri
+        links:
+          type: array
+          items:
+            type: object
+            properties:
+              url:
+                type: string
+                format: uri
+                nullable: true
+              label:
+                type: string
+              active:
+                type: boolean
+        next_page_url:
+          type: string
+          format: uri
+          nullable: true
+        path:
+          type: string
+        per_page:
+          type: integer
+          description: Nombre d'éléments par page
+        prev_page_url:
+          type: string
+          format: uri
+          nullable: true
+        to:
+          type: integer
+          description: Index du dernier élément
+        total:
+          type: integer
+          description: Nombre total d'éléments
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Message d'erreur
+        code:
+          type: integer
+          description: Code d'erreur HTTP
+        details:
+          type: object
+          description: Détails supplémentaires de l'erreur
+
+    # User schemas
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID unique de l'utilisateur
+          example: 1
+        prenom:
+          type: string
+          description: Prénom de l'utilisateur
+          example: "Jean"
+        nom:
+          type: string
+          description: Nom de famille de l'utilisateur
+          example: "Dupont"
+        sexe:
+          type: string
+          enum: ["M", "F"]
+          description: Sexe de l'utilisateur
+          example: "M"
+        date_naissance:
+          type: string
+          format: date
+          description: Date de naissance
+          example: "1990-01-01"
+        adresse:
+          type: string
+          description: Adresse complète de l'utilisateur
+          example: "123 Rue de la Paix, Paris"
+        login:
+          type: string
+          description: Nom d'utilisateur pour la connexion
+          example: "jean.dupont"
+        email:
+          type: string
+          format: email
+          description: Adresse email de l'utilisateur
+          example: "jean.dupont@example.com"
+        telephone:
+          type: string
+          description: Numéro de téléphone
+          example: "+33123456789"
+        type:
+          type: string
+          enum: ["ADMIN", "CLIENT"]
+          description: Type d'utilisateur
+          example: "CLIENT"
+        created_at:
+          type: string
+          format: date-time
+          description: Date de création
+        updated_at:
+          type: string
+          format: date-time
+          description: Date de dernière modification
+
+    CreateUserRequest:
+      type: object
+      required:
+        - prenom
+        - nom
+        - email
+        - login
+        - password
+        - type
+      properties:
+        prenom:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Prénom de l'utilisateur
+          example: "Jean"
+        nom:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Nom de famille
+          example: "Dupont"
+        sexe:
+          type: string
+          enum: ["M", "F"]
+          description: Sexe
+          example: "M"
+        date_naissance:
+          type: string
+          format: date
+          description: Date de naissance (YYYY-MM-DD)
+          example: "1990-01-01"
+        adresse:
+          type: string
+          maxLength: 500
+          description: Adresse complète
+          example: "123 Rue de la Paix, Paris"
+        login:
+          type: string
+          minLength: 3
+          maxLength: 50
+          description: Nom d'utilisateur unique
+          example: "jean.dupont"
+        email:
+          type: string
+          format: email
+          description: Adresse email unique
+          example: "jean.dupont@example.com"
+        telephone:
+          type: string
+          maxLength: 20
+          description: Numéro de téléphone
+          example: "+33123456789"
+        type:
+          type: string
+          enum: ["ADMIN", "CLIENT"]
+          description: Type d'utilisateur
+          example: "CLIENT"
+        password:
+          type: string
+          format: password
+          minLength: 8
+          description: Mot de passe (sera hashé automatiquement)
+          example: "motdepasse123"
+
+    UpdateUserRequest:
+      type: object
+      description: Tous les champs sont optionnels pour la mise à jour
+      properties:
+        prenom:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Prénom de l'utilisateur
+        nom:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Nom de famille
+        sexe:
+          type: string
+          enum: ["M", "F"]
+          description: Sexe
+        date_naissance:
+          type: string
+          format: date
+          description: Date de naissance
+        adresse:
+          type: string
+          maxLength: 500
+          description: Adresse complète
+        login:
+          type: string
+          minLength: 3
+          maxLength: 50
+          description: Nom d'utilisateur
+        email:
+          type: string
+          format: email
+          description: Adresse email
+        telephone:
+          type: string
+          maxLength: 20
+          description: Numéro de téléphone
+        type:
+          type: string
+          enum: ["ADMIN", "CLIENT"]
+          description: Type d'utilisateur
+        password:
+          type: string
+          format: password
+          minLength: 8
+          description: Nouveau mot de passe
+
+    # Compte schemas
+    Compte:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID unique du compte (UUID)
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        numero_compte:
+          type: string
+          description: Numéro unique du compte bancaire
+          example: "1234567890"
+        titulaire_id:
+          type: integer
+          description: ID de l'utilisateur titulaire du compte
+          example: 1
+        type:
+          type: string
+          enum: ["epargne", "cheque", "courant"]
+          description: Type de compte bancaire
+          example: "epargne"
+        devise:
+          type: string
+          enum: ["FCFA", "USD", "EUR", "XOF"]
+          description: Devise du compte
+          example: "FCFA"
+        statut:
+          type: string
+          enum: ["actif", "bloque", "ferme", "inactif", "en_attente", "annulee", "validee"]
+          description: Statut actuel du compte
+          example: "actif"
+        motif_blocage:
+          type: string
+          nullable: true
+          description: Motif du blocage (si applicable)
+          example: "Suspicion de fraude"
+        metadata:
+          type: object
+          nullable: true
+          description: Métadonnées supplémentaires (JSON)
+          example: {"version": "1.0", "derniere_modification": "2023-01-01"}
+        created_at:
+          type: string
+          format: date-time
+          description: Date de création du compte
+        updated_at:
+          type: string
+          format: date-time
+          description: Date de dernière modification
+
+    CompteWithRelations:
+      allOf:
+        - $ref: '#/components/schemas/Compte'
+        - type: object
+          properties:
+            client:
+              $ref: '#/components/schemas/Client'
+            transactions:
+              type: array
+              items:
+                $ref: '#/components/schemas/Transaction'
+
+    Client:
+      type: object
+      properties:
+        user_id:
+          type: integer
+          description: ID de l'utilisateur associé
+        user:
+          $ref: '#/components/schemas/User'
+
+    CreateCompteRequest:
+      type: object
+      required:
+        - numero_compte
+        - titulaire_id
+        - type
+        - devise
+      properties:
+        numero_compte:
+          type: string
+          minLength: 10
+          maxLength: 10
+          description: Numéro unique du compte (10 chiffres)
+          example: "1234567890"
+        titulaire_id:
+          type: integer
+          description: ID de l'utilisateur titulaire
+          example: 1
+        type:
+          type: string
+          enum: ["epargne", "cheque", "courant"]
+          description: Type de compte
+          example: "epargne"
+        devise:
+          type: string
+          enum: ["FCFA", "USD", "EUR", "XOF"]
+          description: Devise du compte
+          example: "FCFA"
+        statut:
+          type: string
+          enum: ["actif", "bloque", "ferme", "inactif", "en_attente", "annulee", "validee"]
+          default: "actif"
+          description: Statut initial du compte
+        motif_blocage:
+          type: string
+          nullable: true
+          description: Motif de blocage (si statut = bloqué)
+        metadata:
+          type: object
+          nullable: true
+          description: Métadonnées supplémentaires
+
+    UpdateCompteRequest:
+      type: object
+      description: Tous les champs sont optionnels pour la mise à jour
+      properties:
+        numero_compte:
+          type: string
+          minLength: 10
+          maxLength: 10
+          description: Nouveau numéro de compte
+        titulaire_id:
+          type: integer
+          description: Nouvel ID du titulaire
+        type:
+          type: string
+          enum: ["epargne", "cheque", "courant"]
+          description: Nouveau type de compte
+        devise:
+          type: string
+          enum: ["FCFA", "USD", "EUR", "XOF"]
+          description: Nouvelle devise
+        statut:
+          type: string
+          enum: ["actif", "bloque", "ferme", "inactif", "en_attente", "annulee", "validee"]
+          description: Nouveau statut
+        motif_blocage:
+          type: string
+          nullable: true
+          description: Motif de blocage
+        metadata:
+          type: object
+          nullable: true
+          description: Métadonnées mises à jour
+
+    # Transaction schemas
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: string
+          description: ID unique de la transaction (UUID)
+          example: "123e4567-e89b-12d3-a456-426614174001"
+        compte_id:
+          type: string
+          description: ID du compte associé
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        type:
+          type: string
+          enum: ["depot", "retrait", "virement", "frais"]
+          description: Type de transaction
+          example: "depot"
+        montant:
+          type: number
+          format: float
+          minimum: 0
+          description: Montant de la transaction
+          example: 1000.50
+        devise:
+          type: string
+          enum: ["FCFA", "USD", "EUR", "XOF"]
+          description: Devise de la transaction
+          example: "FCFA"
+        description:
+          type: string
+          nullable: true
+          maxLength: 500
+          description: Description de la transaction
+          example: "Dépôt mensuel"
+        date_transaction:
+          type: string
+          format: date-time
+          description: Date et heure de la transaction
+          example: "2023-01-15T10:30:00Z"
+        statut:
+          type: string
+          enum: ["actif", "bloque", "inactif", "en_attente", "annulee", "validee"]
+          description: Statut de la transaction
+          example: "actif"
+        created_at:
+          type: string
+          format: date-time
+          description: Date de création
+        updated_at:
+          type: string
+          format: date-time
+          description: Date de dernière modification
+
+    TransactionWithRelations:
+      allOf:
+        - $ref: '#/components/schemas/Transaction'
+        - type: object
+          properties:
+            compte:
+              $ref: '#/components/schemas/Compte'
+
+    CreateTransactionRequest:
+      type: object
+      required:
+        - compte_id
+        - type
+        - montant
+        - devise
+      properties:
+        compte_id:
+          type: string
+          description: ID du compte bancaire
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        type:
+          type: string
+          enum: ["depot", "retrait", "virement", "frais"]
+          description: Type de transaction
+          example: "depot"
+        montant:
+          type: number
+          format: float
+          minimum: 0
+          description: Montant de la transaction
+          example: 1000.50
+        devise:
+          type: string
+          enum: ["FCFA", "USD", "EUR", "XOF"]
+          description: Devise de la transaction
+          example: "FCFA"
+        description:
+          type: string
+          nullable: true
+          maxLength: 500
+          description: Description optionnelle
+          example: "Dépôt mensuel"
+        date_transaction:
+          type: string
+          format: date-time
+          description: "Date et heure de la transaction (optionnel, défaut: maintenant)"
+          example: "2023-01-15T10:30:00Z"
+        statut:
+          type: string
+          enum: ["actif", "bloque", "inactif", "en_attente", "annulee", "validee"]
+          default: "actif"
+          description: Statut de la transaction
+
+  responses:
+    Unauthorized:
+      description: Authentification requise
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Unauthorized"
+            code: 401
+
+    Forbidden:
+      description: Accès interdit
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Forbidden: Admin access required"
+            code: 403
+
+    NotFound:
+      description: Ressource non trouvée
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Compte not found"
+            code: 404
+
+    BadRequest:
+      description: Requête malformée
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "Invalid request data"
+            code: 400
+
+    ValidationError:
+      description: Erreur de validation des données
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              errors:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    type: string
+          example:
+            message: "The given data was invalid."
+            errors:
+              email:
+                - "The email field is required."
+              montant:
+                - "The montant must be greater than 0."
