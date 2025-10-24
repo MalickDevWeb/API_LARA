@@ -27,10 +27,7 @@ services:
       - key: SESSION_DRIVER
         value: file
       - key: APP_URL
-        fromService:
-          type: web
-          name: laravel-app
-          property: host
+        value: https://papamalick.teuw.com
 
   - type: pserv
     name: postgres-db

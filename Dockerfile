@@ -10,7 +10,7 @@ COPY composer.json composer.lock ./
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-scripts
 
 # Étape 2: Image finale pour l'application
-FROM php:8.3-fpm-alpine
+FROM php:8.3-cli-alpine
 
 # Installer les extensions PHP nécessaires
 RUN apk add --no-cache postgresql-dev \
@@ -67,15 +67,11 @@ RUN php artisan key:generate --force && \
     php artisan view:cache
 USER root
 
-# Copier le script d'entrée
-COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
-
 # Passer à l'utilisateur non-root
 USER laravel
 
 # Exposer le port 8000
 EXPOSE 8000
 
-# Commande par défaut
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+# Commande par défaut avec migration et seeders
+CMD php artisan migrate --force && php artisan db:seed --force && php artisan serve --host=0.0.0.0 --port=8000
