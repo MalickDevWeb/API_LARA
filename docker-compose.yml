@@ -1,51 +1,28 @@
-# version: '3.8'  # Deprecated in newer Docker Compose versions
+version: '3.8'
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     ports:
-      - "8001:80"
-    volumes:
-      - .:/var/www/html
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
     depends_on:
       - db
-    environment:
-      - APP_ENV=local
-      - APP_KEY=${APP_KEY}
-      - DB_CONNECTION=pgsql
-      - DB_HOST=db
-      - DB_PORT=5432
-      - DB_DATABASE=sen_banque
-      - DB_USERNAME=postgres
-      - DB_PASSWORD=bakary
-    networks:
-      - laravel
 
   db:
-    image: postgres:15
+    image: postgres:15-alpine
     environment:
-      POSTGRES_DB: sen_banque
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: bakary
+      POSTGRES_DB: laravel
+      POSTGRES_USER: laravel
+      POSTGRES_PASSWORD: password
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
-      - db_data:/var/lib/postgresql/data
-    networks:
-      - laravel
-
-  # redis:
-  #   image: redis:alpine
-  #   ports:
-  #     - "6380:6379"
-  #   networks:
-  #     - laravel
+      - postgres_data:/var/lib/postgresql/data
 
 volumes:
-  db_data:
-
-networks:
-  laravel:
-    driver: bridge
+  postgres_data:
