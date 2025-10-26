@@ -7,11 +7,14 @@ use App\DTOs\CreateCompteDto;
 use App\DTOs\UpdateCompteDto;
 use App\Enums\ErrorEnum;
 use App\Enums\HttpStatusEnum;
+use App\Traits\ExceptionHandlerTrait;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 class CompteController extends Controller
 {
+    use ExceptionHandlerTrait;
+
     protected CompteService $compteService;
 
     public function __construct(CompteService $compteService)
@@ -172,7 +175,7 @@ class CompteController extends Controller
             $this->compteService->deleteCompte($compte);
             return response()->json(['message' => 'Compte deleted successfully']);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], HttpStatusEnum::BAD_REQUEST->value);
+            return $this->handleException($e);
         }
     }
 
