@@ -10,5 +10,8 @@ done
 echo "Database is up - executing migrations"
 php artisan migrate --force
 
+echo "Starting Vite dev server..."
+npm run dev &
+
 echo "Starting Laravel application..."
 exec "$@"

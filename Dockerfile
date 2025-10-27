@@ -12,8 +12,8 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-di
 # Étape 2: Image finale pour l'application
 FROM php:8.3-fpm-alpine
 
-# Installer les extensions PHP nécessaires
-RUN apk add --no-cache postgresql-dev \
+# Installer les extensions PHP nécessaires et Node.js
+RUN apk add --no-cache postgresql-dev nodejs npm \
     && docker-php-ext-install pdo pdo_pgsql
 
 # Créer un utilisateur non-root
@@ -27,6 +27,9 @@ COPY --from=composer-build /app/vendor ./vendor
 
 # Copier le reste du code de l'application
 COPY . .
+
+# Installer les dépendances npm et build les assets
+RUN npm install && npm run build
 
 # Créer les répertoires nécessaires et définir les permissions
 RUN mkdir -p storage/framework/{cache,data,sessions,testing,views} \
@@ -46,11 +49,11 @@ RUN echo "APP_NAME=Laravel" > .env && \
     echo "LOG_LEVEL=error" >> .env && \
     echo "" >> .env && \
     echo "DB_CONNECTION=pgsql" >> .env && \
-    echo "DB_HOST=\${DB_HOST}" >> .env && \
-    echo "DB_PORT=\${DB_PORT}" >> .env && \
-    echo "DB_DATABASE=\${DB_DATABASE}" >> .env && \
-    echo "DB_USERNAME=\${DB_USERNAME}" >> .env && \
-    echo "DB_PASSWORD=\${DB_PASSWORD}" >> .env && \
+    echo "DB_HOST=db" >> .env && \
+    echo "DB_PORT=5432" >> .env && \
+    echo "DB_DATABASE=laravel" >> .env && \
+    echo "DB_USERNAME=laravel" >> .env && \
+    echo "DB_PASSWORD=password" >> .env && \
     echo "" >> .env && \
     echo "CACHE_DRIVER=file" >> .env && \
     echo "SESSION_DRIVER=file" >> .env && \
