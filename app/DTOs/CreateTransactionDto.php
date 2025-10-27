@@ -35,12 +35,48 @@ class CreateTransactionDto
     public function __construct(array $data)
     {
         $this->compte_id = $data['compte_id'];
-        $this->type = $data['type'];
+
+        // Convert type
+        if ($data['type'] instanceof TransactionTypeEnum) {
+            $this->type = $data['type'];
+        } else {
+            $typeValue = strtolower(trim($data['type']));
+            if (!in_array($typeValue, ['depot', 'retrait'])) {
+                throw new \InvalidArgumentException("Invalid type: {$typeValue}. Must be one of: depot, retrait");
+            }
+            $this->type = TransactionTypeEnum::from($typeValue);
+        }
+
         $this->montant = $data['montant'];
-        $this->devise = $data['devise'];
+
+        // Convert devise
+        if ($data['devise'] instanceof DeviseEnum) {
+            $this->devise = $data['devise'];
+        } else {
+            $deviseValue = strtoupper(trim($data['devise']));
+            if (!in_array($deviseValue, ['XOF', 'EUR', 'USD'])) {
+                throw new \InvalidArgumentException("Invalid devise: {$deviseValue}. Must be one of: XOF, EUR, USD");
+            }
+            $this->devise = DeviseEnum::from($deviseValue);
+        }
+
         $this->description = $data['description'] ?? null;
         $this->date_transaction = $data['date_transaction'] ?? now()->toDateTimeString();
-        $this->statut = $data['statut'] ?? 'actif';
+
+        // Convert statut
+        if (isset($data['statut'])) {
+            if ($data['statut'] instanceof StatutEnum) {
+                $this->statut = $data['statut'];
+            } else {
+                $statutValue = strtolower(trim($data['statut']));
+                if (!in_array($statutValue, ['actif', 'bloque', 'ferme'])) {
+                    throw new \InvalidArgumentException("Invalid statut: {$statutValue}. Must be one of: actif, bloque, ferme");
+                }
+                $this->statut = StatutEnum::from($statutValue);
+            }
+        } else {
+            $this->statut = StatutEnum::from('actif');
+        }
     }
 
     public static function rules(): array

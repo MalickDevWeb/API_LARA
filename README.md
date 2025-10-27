@@ -1,130 +1,115 @@
-# Laravel API for Financial Management
+# API Laravel - Test des Endpoints
 
-This is a Laravel-based API application for managing financial operations, including users, accounts (comptes), transactions, and notifications. It provides endpoints for creating and managing clients, admins, accounts, and transactions, with features like role-based access and logging.
+Ce README documente les tests des endpoints de l'API Laravel basée sur les routes définies dans `routes/api.php`. L'application est configurée avec Docker et utilise PostgreSQL.
 
-## Features
+## Configuration
+- Base URL : http://localhost:8000
+- Version API : v1
+- Authentification : Certaines routes nécessitent un token Bearer (non testé ici).
 
-- User management (clients and admins)
-- Account (Compte) management with different types and currencies
-- Transaction processing
-- Notification services (e.g., via Twilio)
-- Role-based middleware for access control
-- API documentation via Swagger
+## Endpoints Testés
 
-## Deployment to Render
+### 1. GET /
+- **URL** : http://localhost:8000/
+- **Statut** : Redirige vers /api/documentation (probablement Swagger).
+- **Réponse** : HTML de redirection.
+- **Problème** : Pas un endpoint API direct.
 
-This application is configured for deployment on [Render](https://render.com), a cloud platform for hosting web applications. The `render.yaml` file defines the services, including a PHP web service and a PostgreSQL database.
+### 2. GET /api/v1/users
+- **URL** : http://localhost:8000/api/v1/users
+- **Statut** : Échec (500 Server Error)
+- **Réponse** : {"message": "Server Error"}
+- **Problème** : Erreur serveur, probablement due à la configuration (APP_KEY vide, cache obsolète, ou connexion DB).
 
-### Prerequisites
+### 3. GET /api/v1/comptes
+- **URL** : http://localhost:8000/api/v1/comptes
+- **Statut** : Échec (500 Server Error)
+- **Réponse** : {"message": "Server Error"}
+- **Problème** : Même que ci-dessus.
 
-- A GitHub repository containing your project code.
-- A Render account.
+### 4. GET /api/v1/transactions
+- **URL** : http://localhost:8000/api/v1/transactions
+- **Statut** : Échec (500 Server Error)
+- **Réponse** : {"message": "Server Error"}
+- **Problème** : Même que ci-dessus.
 
-### Deployment Steps
+### Endpoints Non Testés (Nécessitent Auth ou Données)
+- POST /api/v1/users (créer user)
+- PUT /api/v1/users/{id} (modifier user)
+- DELETE /api/v1/users/{id} (supprimer user)
+- GET /api/v1/users/{id} (détail user)
+- POST /api/v1/comptes (créer compte)
+- PUT /api/v1/comptes/{id} (modifier compte)
+- DELETE /api/v1/comptes/{id} (supprimer compte)
+- GET /api/v1/comptes/{id} (détail compte)
+- POST /api/v1/comptes/{id}/bloquer (bloquer compte) - Nécessite auth ADMIN
+- POST /api/v1/comptes/{id}/debloquer (débloquer compte) - Nécessite auth ADMIN
+- POST /api/v1/transactions (créer transaction)
+- GET /api/v1/transactions/{id} (détail transaction)
 
-1. **Connect Your Repository to Render:**
-   - Log in to your Render dashboard.
-   - Go to the "Web Services" section and click "New Web Service".
-   - Select "Build and deploy from a Git repository" and connect your GitHub repository.
-   - Choose the repository and branch (e.g., `main`).
+## Endpoints Non Implémentés dans les Routes
+Bien que les méthodes soient présentes dans les controllers, les routes suivantes ne sont pas définies dans `routes/api.php` :
+- PUT /api/v1/transactions/{id} (modifier transaction)
+- DELETE /api/v1/transactions/{id} (supprimer transaction)
 
-2. **Configure the Service:**
-   - Render will automatically detect the `render.yaml` file and use it to set up the services.
-   - The configuration includes:
-     - **Web Service:** Runs the Laravel application using PHP.
-     - **Database Service:** PostgreSQL database for data storage.
-   - Review and confirm the settings. The build command and start command are predefined in `render.yaml`.
+## Problèmes Identifiés
+1. **Erreurs 500 sur tous les endpoints GET** : Probablement dues à :
+   - APP_KEY vide ou non générée.
+   - Cache de configuration obsolète (nécessite `php artisan config:clear`).
+   - Connexion à la base de données (PostgreSQL) non configurée correctement.
+   - Mode production avec APP_DEBUG=false masquant les détails.
 
-3. **Set Environment Variables:**
-   - In the Render dashboard, go to your web service's settings and add the following environment variables under "Environment".
-   - Some variables are pre-set in `render.yaml`, but you may need to add or override others based on your requirements.
-   - Required environment variables (based on `.env.example` and configuration):
+2. **Routes avec Middleware Auth** : Les endpoints comme bloquer/debloquer nécessitent authentification, non testée ici.
 
-     | Variable | Description | Example Value | Required |
-     |----------|-------------|---------------|----------|
-     | `APP_NAME` | Application name | `Laravel API` | Yes |
-     | `APP_ENV` | Environment (set to `production`) | `production` | Yes (set in render.yaml) |
-     | `APP_DEBUG` | Debug mode (disable in production) | `false` | Yes (set in render.yaml) |
-     | `APP_KEY` | Application key (auto-generated) | (auto-generated) | Yes (set in render.yaml) |
-     | `APP_URL` | Base URL of the application | `https://your-app.onrender.com` | Yes |
-     | `DB_CONNECTION` | Database connection type | `pgsql` | Yes (set in render.yaml) |
-     | `DATABASE_URL` | Database connection string | (auto-provided by Render) | Yes (set in render.yaml) |
-     | `LOG_CHANNEL` | Logging channel | `stack` | Yes (set in render.yaml) |
-     | `LOG_LEVEL` | Log level | `error` | Yes (set in render.yaml) |
-     | `CACHE_DRIVER` | Cache driver | `file` | Yes (set in render.yaml) |
-     | `QUEUE_CONNECTION` | Queue connection | `sync` | Yes (set in render.yaml) |
-     | `SESSION_DRIVER` | Session driver | `file` | Yes (set in render.yaml) |
-     | `MAIL_MAILER` | Mail driver | `smtp` | Optional |
-     | `MAIL_HOST` | SMTP host | `smtp.example.com` | Optional |
-     | `MAIL_PORT` | SMTP port | `587` | Optional |
-     | `MAIL_USERNAME` | SMTP username | `your-email@example.com` | Optional |
-     | `MAIL_PASSWORD` | SMTP password | `your-password` | Optional |
-     | `MAIL_FROM_ADDRESS` | From email address | `hello@example.com` | Optional |
-     | `MAIL_FROM_NAME` | From name | `${APP_NAME}` | Optional |
-     | `AWS_ACCESS_KEY_ID` | AWS access key (for S3, etc.) | `your-key` | Optional |
-     | `AWS_SECRET_ACCESS_KEY` | AWS secret key | `your-secret` | Optional |
-     | `AWS_DEFAULT_REGION` | AWS region | `us-east-1` | Optional |
-     | `AWS_BUCKET` | S3 bucket name | `your-bucket` | Optional |
-     | `PUSHER_APP_ID` | Pusher app ID (for broadcasting) | `your-id` | Optional |
-     | `PUSHER_APP_KEY` | Pusher key | `your-key` | Optional |
-     | `PUSHER_APP_SECRET` | Pusher secret | `your-secret` | Optional |
-     | `PUSHER_APP_CLUSTER` | Pusher cluster | `mt1` | Optional |
+3. **Routes Manquantes** : Update et delete pour transactions non routées.
 
-     - **Note:** Variables marked as "set in render.yaml" are automatically configured. For others, add them in the Render dashboard if needed for your setup (e.g., email, AWS, Pusher).
-     - If using notifications (e.g., Twilio), add relevant variables like `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER` if implemented.
+## Recommandations
+- Corriger la configuration .env pour PostgreSQL.
+- Générer APP_KEY : `docker compose exec -it app php artisan key:generate`
+- Vider le cache : `docker compose exec app php artisan config:clear` et `cache:clear`
+- Implémenter les routes manquantes si nécessaire.
+- Tester avec authentification pour les endpoints protégés.
 
-4. **Deploy:**
-   - Click "Create Web Service". Render will build and deploy your application.
-   - The build process includes:
-     - Installing Composer dependencies.
-     - Generating the application key.
-     - Caching configuration, routes, and views.
-     - Running database migrations.
-   - Once deployed, your API will be available at the provided URL (e.g., `https://your-app.onrender.com`).
+## Fixes appliquées dans le dépôt
+- Renommage des paramètres de route pour éviter l'injection automatique de modèles (route-model binding) qui causait des erreurs 500 :
+   - `/{user}` -> `/{userId}`
+   - `/{compte}` -> `/{compteId}`
+   - `/{transaction}` -> `/{transactionId}`
+- Ajout des routes manquantes pour les transactions :
+   - PUT `/api/v1/transactions/{transactionId}`
+   - DELETE `/api/v1/transactions/{transactionId}`
+- Mise à jour des contrôleurs (`UserController`, `CompteController`, `TransactionController`) pour accepter et utiliser les identifiants (`userId`, `compteId`, `transactionId`) au lieu d'attendre des objets modèle (ce qui provoquait des TypeErrors).
+- Suppression du cache des routes générées (`bootstrap/cache/routes-v7.php`) du dépôt pour éviter les conflits avec les routes mises à jour. Note : ce fichier est normalement généré par Laravel et n'est pas recommandé en VCS.
 
-5. **Access the API:**
-   - The API endpoints are available at the root URL.
-   - For API documentation, visit `/api/documentation` if Swagger is configured (check `config/l5-swagger.php`).
-   - Use tools like Postman or curl to interact with endpoints such as `/api/users`, `/api/comptes`, `/api/transactions`.
+Ces corrections résolvent la majorité des erreurs 500 observées lors des appels GET de base.
 
-### Database Setup
+## Étapes recommandées après pull / changements
+Après avoir récupéré ces changements sur votre machine de développement (ou dans le conteneur), exécutez :
 
-- The database is automatically provisioned as a PostgreSQL service in `render.yaml`.
-- Migrations are run during the build process, so your database schema will be set up automatically.
-- No manual database setup is required.
+```bash
+# Générer APP_KEY si absent
+docker compose exec -it app php artisan key:generate
 
-### Additional Configurations
+# Vider le cache de configuration et des routes (important après changement de routes)
+docker compose exec -it app php artisan config:clear
+docker compose exec -it app php artisan cache:clear
+docker compose exec -it app php artisan route:clear
 
-- **Notifications:** If using Twilio or other services, ensure the corresponding environment variables are set and the services are configured in your code.
-- **File Storage:** If using AWS S3 for file uploads, configure the AWS variables accordingly.
-- **Caching and Queues:** Currently set to file and sync drivers, suitable for small-scale deployments. For production, consider Redis or other drivers.
-- **Security:** Ensure `APP_DEBUG` is `false` and use HTTPS in production.
+# (Optionnel) Régénérer le cache des routes en production
+docker compose exec -it app php artisan route:cache
+```
 
-### Troubleshooting
+Ensuite, testez les endpoints :
 
-- **Build Failures:** Check the build logs in Render for errors related to dependencies or migrations.
-- **Database Issues:** Verify that migrations ran successfully and the `DATABASE_URL` is correctly set.
-- **Environment Variables:** Double-check that all required variables are added in the Render dashboard.
-- **API Access:** Confirm the service is running and accessible. Check logs for any runtime errors.
+```bash
+curl -X GET http://localhost:8000/api/v1/users -H "Accept: application/json"
+curl -X GET http://localhost:8000/api/v1/comptes -H "Accept: application/json"
+curl -X GET http://localhost:8000/api/v1/transactions -H "Accept: application/json"
+```
 
-For more details on Render deployment, refer to the [Render Documentation](https://render.com/docs).
+Si vous continuez d'avoir des erreurs 500, activez temporairement APP_DEBUG=true dans votre `.env` (uniquement en développement) pour obtenir la stack trace et corriger les erreurs restantes.
 
-## Local Development
-
-To run the application locally:
-
-1. Clone the repository.
-2. Copy `.env.example` to `.env` and update the variables (e.g., database settings).
-3. Run `composer install`.
-4. Generate key: `php artisan key:generate`.
-5. Set up a local database (e.g., MySQL or PostgreSQL) and update `.env`.
-6. Run migrations: `php artisan migrate`.
-7. Start the server: `php artisan serve`.
-
-## Contributing
-
-Contributions are welcome! Please follow standard Laravel practices.
-
-## License
-
-This project is licensed under the MIT License.
+## Comment Lancer les Tests
+Utilisez curl ou Postman pour tester :
+```
+curl -X GET http://localhost:8000/api/v1/users -H "Accept: application/json"

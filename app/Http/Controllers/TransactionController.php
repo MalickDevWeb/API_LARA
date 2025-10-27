@@ -8,9 +8,12 @@ use App\Enums\ErrorEnum;
 use App\Enums\HttpStatusEnum;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use App\Traits\HandlesApiException;
 
 class TransactionController extends Controller
 {
+    use HandlesApiException;
+
     protected TransactionService $transactionService;
 
     public function __construct(TransactionService $transactionService)
@@ -62,9 +65,9 @@ class TransactionController extends Controller
      *     )
      * )
      */
-    public function show(string $transaction): JsonResponse
+    public function show(string $transactionId): JsonResponse
     {
-        $transaction = $this->transactionService->getTransactionById($transaction);
+        $transaction = $this->transactionService->getTransactionById($transactionId);
         if (!$transaction) {
             return response()->json(['error' => ErrorEnum::TRANSACTION_NOT_FOUND->value], HttpStatusEnum::NOT_FOUND->value);
         }
@@ -97,8 +100,8 @@ class TransactionController extends Controller
             $dto = new CreateTransactionDto($request->all());
             $transaction = $this->transactionService->createTransaction($dto);
             return response()->json($transaction, HttpStatusEnum::CREATED->value);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], HttpStatusEnum::BAD_REQUEST->value);
+        } catch (\Throwable $e) {
+            return $this->handleApiException($e);
         }
     }
 
@@ -128,13 +131,13 @@ class TransactionController extends Controller
      *     )
      * )
      */
-    public function update(Request $request, string $transaction): JsonResponse
+    public function update(Request $request, string $transactionId): JsonResponse
     {
         try {
-            $transaction = $this->transactionService->updateTransaction($transaction, $request->all());
+            $transaction = $this->transactionService->updateTransaction($transactionId, $request->all());
             return response()->json($transaction);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], HttpStatusEnum::BAD_REQUEST->value);
+        } catch (\Throwable $e) {
+            return $this->handleApiException($e);
         }
     }
 
@@ -159,13 +162,13 @@ class TransactionController extends Controller
      *     )
      * )
      */
-    public function destroy(string $transaction): JsonResponse
+    public function destroy(string $transactionId): JsonResponse
     {
         try {
-            $this->transactionService->deleteTransaction($transaction);
+            $this->transactionService->deleteTransaction($transactionId);
             return response()->json(['message' => 'Transaction deleted successfully']);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], HttpStatusEnum::BAD_REQUEST->value);
+        } catch (\Throwable $e) {
+            return $this->handleApiException($e);
         }
     }
 }

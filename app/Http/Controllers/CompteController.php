@@ -8,12 +8,13 @@ use App\DTOs\UpdateCompteDto;
 use App\Enums\ErrorEnum;
 use App\Enums\HttpStatusEnum;
 use App\Traits\ExceptionHandlerTrait;
+use App\Traits\HandlesApiException;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 class CompteController extends Controller
 {
-    use ExceptionHandlerTrait;
+    use ExceptionHandlerTrait, HandlesApiException;
 
     protected CompteService $compteService;
 
@@ -68,9 +69,9 @@ class CompteController extends Controller
  * )
  */
 
-    public function show(string $compte): JsonResponse
+    public function show(string $compteId): JsonResponse
     {
-        $compte = $this->compteService->getCompteById($compte);
+        $compte = $this->compteService->getCompteById($compteId);
         if (!$compte) {
             return response()->json(['error' => ErrorEnum::COMPTE_NOT_FOUND->value], HttpStatusEnum::NOT_FOUND->value);
         }
@@ -101,11 +102,22 @@ class CompteController extends Controller
     public function store(Request $request): JsonResponse
     {
         try {
-            $dto = new CreateCompteDto($request->all());
+            // Validate request data first
+            $rules = CreateCompteDto::rules();
+            $validator = \Validator::make($request->all(), $rules);
+            if ($validator->fails()) {
+                return response()->json([
+                    'error' => 'Validation failed',
+                    'details' => $validator->errors()
+                ], HttpStatusEnum::BAD_REQUEST->value);
+            }
+            $data = $request->all();
+            \Log::info('Creating compte with data:', $data);
+            $dto = new CreateCompteDto($data);
             $compte = $this->compteService->createCompte($dto);
             return response()->json($compte, HttpStatusEnum::CREATED->value);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], HttpStatusEnum::BAD_REQUEST->value);
+        } catch (\Throwable $e) {
+            return $this->handleApiException($e);
         }
     }
 
@@ -136,14 +148,14 @@ class CompteController extends Controller
  * )
  */
 
-    public function update(Request $request, string $compte): JsonResponse
+    public function update(Request $request, string $compteId): JsonResponse
     {
         try {
             $dto = new UpdateCompteDto($request->all());
-            $compte = $this->compteService->updateCompte($compte, $dto);
+            $compte = $this->compteService->updateCompte($compteId, $dto);
             return response()->json($compte);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], HttpStatusEnum::BAD_REQUEST->value);
+        } catch (\Throwable $e) {
+            return $this->handleApiException($e);
         }
     }
 
@@ -169,13 +181,13 @@ class CompteController extends Controller
  * )
  */
 
-    public function destroy(string $compte): JsonResponse
+    public function destroy(string $compteId): JsonResponse
     {
         try {
-            $this->compteService->deleteCompte($compte);
+            $this->compteService->deleteCompte($compteId);
             return response()->json(['message' => 'Compte deleted successfully']);
-        } catch (\Exception $e) {
-            return $this->handleException($e);
+        } catch (\Throwable $e) {
+            return $this->handleApiException($e);
         }
     }
 
@@ -208,14 +220,14 @@ class CompteController extends Controller
  * )
  */
 
-    public function bloquer(Request $request, string $compte): JsonResponse
+    public function bloquer(Request $request, string $compteId): JsonResponse
     {
         try {
             $motif = $request->get('motif', 'Blocked by admin');
-            $compte = $this->compteService->bloquerCompte($compte, $motif);
+            $compte = $this->compteService->bloquerCompte($compteId, $motif);
             return response()->json($compte);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], HttpStatusEnum::BAD_REQUEST->value);
+        } catch (\Throwable $e) {
+            return $this->handleApiException($e);
         }
     }
 
@@ -242,13 +254,13 @@ class CompteController extends Controller
  * )
  */
 
-    public function debloquer(string $compte): JsonResponse
+    public function debloquer(string $compteId): JsonResponse
     {
         try {
-            $compte = $this->compteService->debloquerCompte($compte);
+            $compte = $this->compteService->debloquerCompte($compteId);
             return response()->json($compte);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], HttpStatusEnum::BAD_REQUEST->value);
+        } catch (\Throwable $e) {
+            return $this->handleApiException($e);
         }
     }
 }

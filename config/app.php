@@ -1,4 +1,4 @@
-<?php
+de<?php
 
 use Illuminate\Support\Facades\Facade;
 use Illuminate\Support\ServiceProvider;
@@ -156,20 +156,21 @@ return [
     */
 
     'providers' => ServiceProvider::defaultProviders()->merge([
-        /*
-         * Package Service Providers...
-         */
-        \L5Swagger\L5SwaggerServiceProvider::class,
+         /*
+          * Package Service Providers...
+          */
+         \L5Swagger\L5SwaggerServiceProvider::class,
+         \Laravel\Passport\PassportServiceProvider::class,
 
-        /*
-         * Application Service Providers...
-         */
-        App\Providers\AppServiceProvider::class,
-        App\Providers\AuthServiceProvider::class,
-        // App\Providers\BroadcastServiceProvider::class,
-        App\Providers\EventServiceProvider::class,
-        App\Providers\RouteServiceProvider::class,
-    ])->toArray(),
+         /*
+          * Application Service Providers...
+          */
+         App\Providers\AppServiceProvider::class,
+         App\Providers\AuthServiceProvider::class,
+         // App\Providers\BroadcastServiceProvider::class,
+         App\Providers\EventServiceProvider::class,
+         App\Providers\RouteServiceProvider::class,
+     ])->toArray(),
 
     /*
     |--------------------------------------------------------------------------

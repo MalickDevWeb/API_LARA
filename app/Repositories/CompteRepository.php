@@ -35,14 +35,16 @@ class CompteRepository implements CompteRepositoryInterface
     public function create(CreateCompteDto $dto): Compte
     {
         return Compte::create([
-            'id' => $dto->numero_compte, // Assuming numero_compte is the ID
-            'numero_compte' => $dto->numero_compte,
-            'titulaire_id' => $dto->titulaire_id,
-            'type' => $dto->type,
-            'devise' => $dto->devise,
-            'statut' => $dto->statut,
-            'motif_blocage' => $dto->motif_blocage,
-            'metadata' => $dto->metadata,
+                // id should be a uuid; numero_compte is a separate business identifier
+                'id' => \Illuminate\Support\Str::uuid()->toString(),
+                'numero_compte' => $dto->getNumeroCompte(),
+                'titulaire_id' => $dto->getTitulaireId(),
+                // store enum values to keep database columns as strings
+                'type' => $dto->getType() instanceof \BackedEnum ? $dto->getType()->value : $dto->getType(),
+                'devise' => $dto->getDevise() instanceof \BackedEnum ? $dto->getDevise()->value : $dto->getDevise(),
+                'statut' => $dto->getStatut() instanceof \BackedEnum ? $dto->getStatut()->value : $dto->getStatut(),
+                'motif_blocage' => $dto->getMotifBlocage(),
+                'metadata' => $dto->getMetadata(),
         ]);
     }
 
@@ -54,13 +56,13 @@ class CompteRepository implements CompteRepositoryInterface
         }
 
         $data = [];
-        if ($dto->numero_compte !== null) $data['numero_compte'] = $dto->numero_compte;
-        if ($dto->titulaire_id !== null) $data['titulaire_id'] = $dto->titulaire_id;
-        if ($dto->type !== null) $data['type'] = $dto->type;
-        if ($dto->devise !== null) $data['devise'] = $dto->devise;
-        if ($dto->statut !== null) $data['statut'] = $dto->statut;
-        if ($dto->motif_blocage !== null) $data['motif_blocage'] = $dto->motif_blocage;
-        if ($dto->metadata !== null) $data['metadata'] = $dto->metadata;
+            if ($dto->getNumeroCompte() !== null) $data['numero_compte'] = $dto->getNumeroCompte();
+            if ($dto->getTitulaireId() !== null) $data['titulaire_id'] = $dto->getTitulaireId();
+            if ($dto->getType() !== null) $data['type'] = $dto->getType();
+            if ($dto->getDevise() !== null) $data['devise'] = $dto->getDevise();
+            if ($dto->getStatut() !== null) $data['statut'] = $dto->getStatut();
+            if ($dto->getMotifBlocage() !== null) $data['motif_blocage'] = $dto->getMotifBlocage();
+            if ($dto->getMetadata() !== null) $data['metadata'] = $dto->getMetadata();
 
         $compte->update($data);
         return $compte->fresh();

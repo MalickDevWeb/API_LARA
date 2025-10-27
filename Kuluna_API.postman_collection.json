@@ -1,0 +1,170 @@
+{
+    "info": {
+        "name": "Kuluna API",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "Users",
+            "item": [
+                {
+                    "name": "Get All Users",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:8000/api/v1/users",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8000",
+                            "path": ["api", "v1", "users"]
+                        }
+                    }
+                },
+                {
+                    "name": "Create User",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "http://localhost:8000/api/v1/users",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8000",
+                            "path": ["api", "v1", "users"]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"nom\": \"John\",\n    \"prenom\": \"Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"telephone\": \"+1234567890\",\n    \"adresse\": \"123 Main St\",\n    \"password\": \"password123\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Get User by ID",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:8000/api/v1/users/1",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8000",
+                            "path": ["api", "v1", "users", "1"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Comptes",
+            "item": [
+                {
+                    "name": "Get All Comptes",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:8000/api/v1/comptes",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8000",
+                            "path": ["api", "v1", "comptes"]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Compte",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "http://localhost:8000/api/v1/comptes",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8000",
+                            "path": ["api", "v1", "comptes"]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"numero_compte\": \"ACC123456\",\n    \"titulaire_id\": 1,\n    \"type\": \"courant\",\n    \"devise\": \"XOF\",\n    \"statut\": \"actif\",\n    \"metadata\": {\n        \"description\": \"Compte principal\"\n    }\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Get Compte by ID",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:8000/api/v1/comptes/1",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8000",
+                            "path": ["api", "v1", "comptes", "1"]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Transactions",
+            "item": [
+                {
+                    "name": "Get All Transactions",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:8000/api/v1/transactions",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8000",
+                            "path": ["api", "v1", "transactions"]
+                        }
+                    }
+                },
+                {
+                    "name": "Create Transaction",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": {
+                            "raw": "http://localhost:8000/api/v1/transactions",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8000",
+                            "path": ["api", "v1", "transactions"]
+                        },
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"compte_source_id\": 1,\n    \"compte_destination_id\": 2,\n    \"montant\": 1000.00,\n    \"type\": \"virement\",\n    \"description\": \"Virement mensuel\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Get Transaction by ID",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "http://localhost:8000/api/v1/transactions/1",
+                            "protocol": "http",
+                            "host": ["localhost"],
+                            "port": "8000",
+                            "path": ["api", "v1", "transactions", "1"]
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

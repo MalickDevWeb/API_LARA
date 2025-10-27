@@ -35,9 +35,46 @@ class UpdateCompteDto
     {
         $this->numero_compte = $data['numero_compte'] ?? null;
         $this->titulaire_id = $data['titulaire_id'] ?? null;
-        $this->type = $data['type'] ?? null;
-        $this->devise = $data['devise'] ?? null;
-        $this->statut = $data['statut'] ?? null;
+
+        // Convert type
+        if (isset($data['type'])) {
+            if ($data['type'] instanceof CompteTypeEnum) {
+                $this->type = $data['type'];
+            } else {
+                $typeValue = strtolower(trim($data['type']));
+                if (!in_array($typeValue, ['epargne', 'cheque', 'courant'])) {
+                    throw new \InvalidArgumentException("Invalid type: {$typeValue}. Must be one of: epargne, cheque, courant");
+                }
+                $this->type = CompteTypeEnum::from($typeValue);
+            }
+        }
+
+        // Convert devise
+        if (isset($data['devise'])) {
+            if ($data['devise'] instanceof DeviseEnum) {
+                $this->devise = $data['devise'];
+            } else {
+                $deviseValue = strtoupper(trim($data['devise']));
+                if (!in_array($deviseValue, ['XOF', 'EUR', 'USD'])) {
+                    throw new \InvalidArgumentException("Invalid devise: {$deviseValue}. Must be one of: XOF, EUR, USD");
+                }
+                $this->devise = DeviseEnum::from($deviseValue);
+            }
+        }
+
+        // Convert statut
+        if (isset($data['statut'])) {
+            if ($data['statut'] instanceof StatutEnum) {
+                $this->statut = $data['statut'];
+            } else {
+                $statutValue = strtolower(trim($data['statut']));
+                if (!in_array($statutValue, ['actif', 'bloque', 'ferme'])) {
+                    throw new \InvalidArgumentException("Invalid statut: {$statutValue}. Must be one of: actif, bloque, ferme");
+                }
+                $this->statut = StatutEnum::from($statutValue);
+            }
+        }
+
         $this->motif_blocage = $data['motif_blocage'] ?? null;
         $this->metadata = $data['metadata'] ?? null;
     }

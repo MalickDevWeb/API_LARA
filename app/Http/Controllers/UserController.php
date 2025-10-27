@@ -37,8 +37,11 @@ use Illuminate\Http\JsonResponse;
  *     bearerFormat="JWT"
  * )
  */
+
+
 class UserController extends Controller
 {
+    use HandlesApiException;
     protected UserService $userService;
 
     public function __construct(UserService $userService)
@@ -90,9 +93,9 @@ class UserController extends Controller
      *     )
      * )
      */
-    public function show(int $user): JsonResponse
+    public function show(int $userId): JsonResponse
     {
-        $user = $this->userService->getUserById($user);
+        $user = $this->userService->getUserById($userId);
         if (!$user) {
             return response()->json(['error' => ErrorEnum::USER_NOT_FOUND->value], HttpStatusEnum::NOT_FOUND->value);
         }
@@ -125,8 +128,8 @@ class UserController extends Controller
             $dto = new CreateUserDto($request->all());
             $user = $this->userService->createUser($dto);
             return response()->json($user, HttpStatusEnum::CREATED->value);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], HttpStatusEnum::BAD_REQUEST->value);
+        } catch (\Throwable $e) {
+            return $this->handleApiException($e);
         }
     }
 
@@ -156,13 +159,13 @@ class UserController extends Controller
      *     )
      * )
      */
-    public function update(Request $request, int $user): JsonResponse
+    public function update(Request $request, int $userId): JsonResponse
     {
         try {
-            $user = $this->userService->updateUser($user, $request->all());
+            $user = $this->userService->updateUser($userId, $request->all());
             return response()->json($user);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], HttpStatusEnum::BAD_REQUEST->value);
+        } catch (\Throwable $e) {
+            return $this->handleApiException($e);
         }
     }
 
@@ -187,13 +190,13 @@ class UserController extends Controller
      *     )
      * )
      */
-    public function destroy(int $user): JsonResponse
+    public function destroy(int $userId): JsonResponse
     {
         try {
-            $this->userService->deleteUser($user);
+            $this->userService->deleteUser($userId);
             return response()->json(['message' => 'User deleted successfully']);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], HttpStatusEnum::BAD_REQUEST->value);
+        } catch (\Throwable $e) {
+            return $this->handleApiException($e);
         }
     }
 }

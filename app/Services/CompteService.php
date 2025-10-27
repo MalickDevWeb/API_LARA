@@ -49,7 +49,7 @@ class CompteService implements CompteServiceInterface
         }
 
         // Business logic: Check if titulaire exists
-        $client = \App\Models\Client::where('user_id', $dto->titulaire_id)->first();
+            $client = \App\Models\Client::where('user_id', $dto->getTitulaireId())->first();
         if (!$client) {
             throw new \Exception(ErrorEnum::TITULAIRE_NOT_FOUND->value);
         }
